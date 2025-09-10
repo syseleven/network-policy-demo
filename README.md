@@ -124,5 +124,14 @@ hubble observe --verdict DROPPED -f
 ```
 
 
+LINKS:
 
+[Network Policy Editor](https:/editor.networkpolicy.io)
 
+[isovalent Labs](https://isovalent.com/labs)
+
+[Cilium Network Policy Docs](https://docs.cilium.io/en/latest/security/policy)
+
+[isovalent Network Policy Book](https://isovalent.com/books/kubernetes-network-policies-done-the-right-way-by-isovalent)
+
+[Lord Of the Rules Talk](https://youtu.be/3N_XBNAycqw?si=tBzBuAa8jC2nhT4M)
