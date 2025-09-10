@@ -1,0 +1,144 @@
+## nginx configuration
+##
+global:
+  image:
+    registry: registry.k8s.io
+
+controller:
+  image:
+    image: ingress-nginx/controller
+    # uid=101(www-data) gid=82(www-data) groups=82(www-data)
+    runAsUser: 101
+    # uid=101(www-data) gid=82(www-data) groups=82(www-data)
+    runAsGroup: 82
+
+  # Configures the ports the nginx-controller listens on
+  containerPort:
+    http: 80
+    https: 443
+
+  ## Name of the ingress class to route through this controller
+  ##
+  ingressClass: nginx
+
+  config:
+    annotations-risk-level: Critical
+
+  ## DaemonSet or Deployment
+  ##
+  kind: Deployment
+
+  # The update strategy to apply to the Deployment or DaemonSet
+  ##
+  updateStrategy:
+   rollingUpdate:
+     maxUnavailable: 1
+   type: RollingUpdate
+
+  ## Liveness and readiness probe values
+  ##
+  livenessProbe:
+    failureThreshold: 5
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  readinessProbe:
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+
+  # Path of the health check endpoint. All requests received on the port defined by
+  # the healthz-port parameter are forwarded internally to this path.
+  healthCheckPath: "/healthz"
+
+  replicaCount: 1
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+
+  autoscaling:
+    apiVersion: autoscaling/v2
+    enabled: false
+
+  service:
+    enabled: true
+
+    annotations:
+      loadbalancer.openstack.org/keep-floatingip: true
+
+    enableHttp: true
+    enableHttps: true
+
+    ports:
+      http: 80
+      https: 443
+
+    targetPorts:
+      http: http
+      https: https
+
+    type: LoadBalancer
+
+## Default 404 backend
+##
+defaultBackend:
+  enabled: true
+
+  image:
+    registry: registry.k8s.io
+    image: defaultbackend-amd64
+    tag: "1.5"
+    # nobody user -> uid 65534
+    runAsUser: 65534
+    runAsNonRoot: true
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+
+  serviceAccount:
+    create: true
+    name: nginx-ingress
+
+  port: 8080
+
+  ## Readiness and liveness probes for default backend
+  ##
+  livenessProbe:
+    failureThreshold: 3
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 5
+  readinessProbe:
+    failureThreshold: 6
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 5
+
+  replicaCount: 1
+  minAvailable: 1
+
+  resources:
+  limits:
+    cpu: 10m
+    memory: 20Mi
+  requests:
+    cpu: 10m
+    memory: 20Mi
+
+## Enable RBAC
+rbac:
+  create: true
+  scope: false
+
+serviceAccount:
+  create: true
+  name: nginx-ingress-backend

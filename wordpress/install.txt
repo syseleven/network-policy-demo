@@ -1,0 +1,1 @@
+helm upgrade --install wordpress --namespace=wordpress --create-namespace -f wordpress.yml bitnami/wordpress

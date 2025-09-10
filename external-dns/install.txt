@@ -1,0 +1,1 @@
+helm upgrade --install external-dns --namespace=external-dns --create-namespace -f external-dns.yml bitnami/external-dns

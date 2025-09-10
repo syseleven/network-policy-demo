@@ -1,0 +1,201 @@
+## Global Docker image parameters
+##
+image:
+  registry: docker.io
+  repository: bitnamilegacy/wordpress
+
+wordpressUsername: admin
+wordpressPassword: MY-PASSWORD
+
+## Admin email
+##
+wordpressEmail: info@example.com
+
+## First name
+##
+wordpressFirstName: ACME
+
+## Last name
+##
+wordpressLastName: ACME
+
+## Blog name
+##
+wordpressBlogName: ACME Blog!
+
+## Table prefix
+##
+wordpressTablePrefix: wp_
+
+## Scheme to generate application URLs
+## ref: https://github.com/bitnami/bitnami-docker-wordpress#environment-variables
+##
+wordpressScheme: http
+
+## Skip wizard installation (only if you use an external database that already contains WordPress data)
+##
+wordpressSkipInstall: false
+
+## Set to `false` to allow the container to be started with blank passwords
+##
+allowEmptyPassword: false
+
+networkPolicy:
+  enabled: false
+
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
+
+replicaCount: 1
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+  requests:
+    memory: 512Mi
+    cpu: 50m
+
+## K8s Security Context for WordPress pods
+##
+podSecurityContext:
+  enabled: true
+  fsGroup: 1001
+  seccompProfile:
+    type: "RuntimeDefault"
+
+containerSecurityContext:
+  enabled: true
+  runAsUser: 1001
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+
+## WordPress containers' liveness and readiness probes.
+##
+livenessProbe:
+  enabled: true
+  tcpSocket:
+    port: http
+  initialDelaySeconds: 120
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+readinessProbe:
+  enabled: true
+  httpGet:
+    path: /wp-login.php
+    port: http
+    scheme: HTTP
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+
+## Kubernetes configuration
+##
+service:
+  type: ClusterIP
+  port: 80
+  httpsPort: 443
+  httpsTargetPort: https
+
+ingress:
+  enabled: true
+  tls: true
+  hostname: blog.example.com
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+
+persistence:
+  enabled: true
+  storageClass: ""
+  accessModes:
+  - ReadWriteMany
+  size: 10Gi
+
+## Init containers parameters:
+##
+volumePermissions:
+  ## volumePermissions.enabled Enable init container that changes the owner/group of the PV mount point to `runAsUser:fsGroup`
+  enabled: true
+  image:
+    registry: docker.io
+    repository: bitnami/os-shell
+  resources:
+    limits: {}
+    requests: {}
+  ## Note: the chown of the data folder is done to containerSecurityContext.runAsUser
+  ## and not the below volumePermissions.containerSecurityContext.runAsUser
+  containerSecurityContext:
+    runAsUser: 0
+
+## MariaDB chart configuration
+mariadb:
+  enabled: true
+  architecture: standalone
+
+  auth:
+    rootPassword: "MY-PASSWORD"
+    database: wordpress
+    username: wordpress
+    password: "MY-PASSWORD"
+
+  primary:
+    name: primary
+    configuration: |-
+      [mysqld]
+      skip-name-resolve
+      explicit_defaults_for_timestamp
+      basedir=/opt/bitnami/mariadb
+      plugin_dir=/opt/bitnami/mariadb/plugin
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      tmpdir=/opt/bitnami/mariadb/tmp
+      max_allowed_packet=16M
+      bind-address=*
+      max_connections=300
+      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+      log-error=/opt/bitnami/mariadb/logs/mysqld.log
+      character-set-server=UTF8
+      collation-server=utf8_general_ci
+      slow_query_log=0
+      slow_query_log_file=/opt/bitnami/mariadb/logs/mysqld.log
+      long_query_time=10.0
+      [client]
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      default-character-set=UTF8
+      plugin_dir=/opt/bitnami/mariadb/plugin
+      [manager]
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+
+  ## Enable persistence using Persistent Volume Claims
+  ##
+  master:
+    persistence:
+      enabled: true
+      accessModes:
+        - ReadWriteOnce
+      size: 8Gi
+
+  networkPolicy:
+    enabled: false
+
+## Prometheus Exporter / Metrics
+##
+metrics:
+  enabled: false
+
+  ## Prometheus Service Monitor
+  serviceMonitor:
+    enabled: false

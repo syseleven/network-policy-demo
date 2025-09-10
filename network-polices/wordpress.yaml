@@ -1,0 +1,39 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: wordpress-policy
+  namespace: wordpress
+spec:
+  endpointSelector: {}
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: nginx-ingress
+            app.kubernetes.io/instance: nginx-ingress
+      toPorts:
+        - ports:
+            - port: "8080"
+    - fromEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: wordpress
+            app.kubernetes.io/name: wordpress
+      toPorts:
+        - ports:
+            - port: "3306"
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: wordpress
+            app.kubernetes.io/name: mariadb
+      toPorts:
+        - ports:
+            - port: "3306"
+    - toFQDNs:
+        - matchName: "wordpress.org"
+        - matchName: "api.wordpress.org"
+        - matchName: "planet.wordpress.org"
+        - matchName: "downloads.wordpress.org"
+      toPorts:
+        - ports:
+             - port: "443"
+

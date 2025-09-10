@@ -1,0 +1,90 @@
+global:
+  security:
+    allowInsecureImages: true
+
+image:
+  registry: registry.k8s.io
+  repository: external-dns/external-dns
+  tag: v0.18.0
+
+sources:
+- service
+- ingress
+
+provider: aws
+
+aws:
+  credentials:
+    secretKey: "SECRET-KEY"
+    accessKey: "ACCESS-KEY"
+    mountPath: "/.aws"
+
+  ## AWS region
+  region: "eu-central-1"
+
+# Limit possible target zones by domain suffixes (optional)
+domainFilters: []
+
+# Limit possible target zones by zone id (optional)
+zoneIdFilters: []
+
+# Filter sources managed by external-dns via annotation using label selector semantics (optional)
+annotationFilter: ""
+
+# Adjust the interval for DNS updates
+interval: "1m"
+
+# Registry to use for ownership (txt or noop)
+registry: "txt"
+
+# When using the TXT registry, a name that identifies this instance of ExternalDNS
+txtOwnerId: "demo"
+
+## Modify how DNS records are sychronized between sources and providers (options: sync, upsert-only )
+policy: sync
+
+# Verbosity of the logs (options: panic, debug, info, warning, error, fatal)
+logLevel: info
+
+## Replica count
+replicas: 1
+
+podLabels:
+  release: monitoring
+
+serviceAccount:
+  create: true
+
+rbac:
+  create: true
+  clusterRole: true
+  apiVersion: v1
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+podSecurityContext:
+  fsGroup: 1001
+  runAsUser: 1001
+  runAsNonRoot: true
+
+networkPolicy:
+  enabled: false
+
+resources:
+ limits:
+   cpu: 50m
+   memory: 50Mi
+ requests:
+   memory: 50Mi
+   cpu: 10m
+
+## Prometheus Exporter / Metrics
+metrics:
+  enabled: false
+
+  ## Prometheus Operator ServiceMonitor configuration
+  serviceMonitor:
+    enabled: false

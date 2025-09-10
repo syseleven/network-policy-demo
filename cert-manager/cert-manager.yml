@@ -1,0 +1,89 @@
+global:
+
+  podSecurityPolicy:
+    enabled: false
+    useAppArmor: true
+
+  # Set the verbosity of cert-manager. Range of 0 - 6 with 6 being the most verbose.
+  logLevel: 2
+
+  leaderElection:
+    # Override the namespace used to store the ConfigMap for leader election
+    namespace: "kube-system"
+
+crds:
+  enabled: false
+  keep: true
+
+replicaCount: 1
+
+strategy:
+   type: RollingUpdate
+   rollingUpdate:
+     maxSurge: 0
+     maxUnavailable: 1
+
+image:
+  repository: quay.io/jetstack/cert-manager-controller
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+
+resources:
+   requests:
+     cpu: 10m
+     memory: 32Mi
+
+# DNS Challenge
+ingressShim:
+  defaultIssuerName: "letsencrypt-prod"
+  defaultIssuerKind: "ClusterIssuer"
+
+prometheus:
+  enabled: false
+  servicemonitor:
+    enabled: false
+
+webhook:
+  replicaCount: 1
+
+  strategy:
+     type: RollingUpdate
+     rollingUpdate:
+       maxSurge: 0
+       maxUnavailable: 1
+
+  resources:
+     requests:
+       cpu: 10m
+       memory: 32Mi
+
+  image:
+    repository: quay.io/jetstack/cert-manager-webhook
+    pullPolicy: IfNotPresent
+
+  serviceAccount:
+    create: true
+
+cainjector:
+  enabled: true
+  replicaCount: 1
+
+  strategy:
+     type: RollingUpdate
+     rollingUpdate:
+       maxSurge: 0
+       maxUnavailable: 1
+
+  resources:
+     requests:
+       cpu: 10m
+       memory: 32Mi
+
+  image:
+    repository: quay.io/jetstack/cert-manager-cainjector
+    pullPolicy: IfNotPresent
+
+  serviceAccount:
+    create: true

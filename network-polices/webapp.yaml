@@ -1,0 +1,20 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: webapp-policy
+  namespace: webapp
+spec:
+  endpointSelector: {}
+  ingress:
+    - fromEndpoints:
+      - matchLabels:
+          io.kubernetes.pod.namespace: nginx-ingress
+          app.kubernetes.io/instance: nginx-ingress
+      toPorts:
+      - ports:
+        - port: "8080"
+  egress:
+    - icmps:
+      - fields:
+        - type: EchoRequest
+          family: IPv4

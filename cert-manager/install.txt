@@ -1,0 +1,1 @@
+helm upgrade --install cert-manager --namespace=cert-manager --create-namespace -f cert-manager.yml jetstack/cert-manager

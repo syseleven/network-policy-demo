@@ -1,0 +1,1 @@
+helm upgrade --install -n kube-system -f  cilium-values.yaml cilium cilium/cilium

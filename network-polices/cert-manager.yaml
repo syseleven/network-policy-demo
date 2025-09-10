@@ -1,0 +1,30 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: cert-manager-policy
+  namespace: cert-manager
+spec:
+  endpointSelector: {}
+  ingress:
+    - {}
+  egress:
+    - toFQDNs:
+        - matchName: "acme-v02.api.letsencrypt.org"
+        - matchName: "route53.amazonaws.com"
+      toPorts:
+        - ports:
+            - port: "443"
+    - toFQDNs:
+        - matchName: "ns-108.awsdns-13.com"
+        - matchName: "ns-1605.awsdns-08.co.uk"
+        - matchName: "ns-1008.awsdns-62.net"
+        - matchName: "ns-1044.awsdns-02.org"
+      toPorts:
+        - ports:
+            - port: "53"
+    - toEntities:
+        - kube-apiserver
+      toPorts:
+        - ports:
+            - port: "6443"
+
